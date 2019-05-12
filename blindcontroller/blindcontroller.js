@@ -312,7 +312,7 @@ module.exports = function(RED) {
         msg.payload.uvthreshold &&
         (typeof msg.payload.uvthreshold != "number" ||
           msg.payload.uvthreshold < 0 ||
-          msg.payload.uvthreshold > 8)
+          msg.payload.uvthreshold > 11)
       ) {
         node.error(
           RED._("blindcontroller.error.blind.invalid-uvthreshold") +
