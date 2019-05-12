@@ -308,10 +308,31 @@ module.exports = function(RED) {
         );
         validMsg = false;
       }
+      if (
+        msg.payload.uvthreshold &&
+        (typeof msg.payload.uvthreshold != "number" ||
+          msg.payload.uvthreshold < 0 ||
+          msg.payload.uvthreshold > 8)
+      ) {
+        node.error(
+          RED._("blindcontroller.error.blind.invalid-uvthreshold") +
+            msg.payload.uvthreshold,
+          msg
+        );
+        validMsg = false;
+      }
       if (invalidPosition(msg.payload.cloudsthresholdposition, msg.payload.increment)) {
         node.error(
           RED._("blindcontroller.error.blind.invalid-cloudsthresholdposition") +
             msg.payload.cloudsthresholdposition,
+          msg
+        );
+        validMsg = false;
+      }
+      if (invalidPosition(msg.payload.uvthresholdposition, msg.payload.increment)) {
+        node.error(
+          RED._("blindcontroller.error.blind.invalid-uvthresholdposition") +
+            msg.payload.uvthresholdposition,
           msg
         );
         validMsg = false;
@@ -575,6 +596,10 @@ module.exports = function(RED) {
       weather.clouds && blind.cloudsthreshold
         ? weather.clouds > blind.cloudsthreshold
         : false;
+    var isUVOkay =
+      weather.uv && blind.uvthreshold
+        ? weather.uv < blind.uvthreshold
+        : false;
     var now = new Date();
 
     if (hasBlindPositionExpired(blind.blindPositionExpiry)) {
@@ -597,6 +622,12 @@ module.exports = function(RED) {
                   blind.blindPositionReasonDesc = RED._(
                     "blindcontroller.positionReason.06"
                   );
+                } else if (isUVOkay) {
+                  blind.blindPosition = blind.uvthresholdposition;
+                  blind.blindPositionReasonCode = "08";
+                  blind.blindPositionReasonDesc = RED._(
+                    "blindcontroller.positionReason.08"
+                  );
                 } else {
                   blind.blindPosition = blind.maxopen;
                   blind.blindPositionReasonCode = "05";
@@ -618,7 +649,7 @@ module.exports = function(RED) {
                   ((blind.altitudethreshold &&
                     sunPosition.altitude >= blind.altitudethreshold) ||
                     !blind.altitudethreshold) &&
-                  !isOvercast
+                  !isOvercast && !isUVOkay
                 ) {
                   var height =
                     Math.tan(sunPosition.altitude * Math.PI / 180) *
@@ -662,6 +693,12 @@ module.exports = function(RED) {
                   blind.blindPositionReasonCode = "06";
                   blind.blindPositionReasonDesc = RED._(
                     "blindcontroller.positionReason.06"
+                  );
+                } else if (isUVOkay) {
+                  blind.blindPosition = blind.uvthresholdposition;
+                  blind.blindPositionReasonCode = "08";
+                  blind.blindPositionReasonDesc = RED._(
+                    "blindcontroller.positionReason.08"
                   );
                 }
               } else {
@@ -859,6 +896,10 @@ module.exports = function(RED) {
               msg.payload.cloudsthresholdposition,
               Number(RED._("blindcontroller.placeholder.cloudsthresholdposition"))
             );
+            blinds[channel].uvthresholdposition = defaultIfUndefined(
+              msg.payload.uvthresholdposition,
+              Number(RED._("blindcontroller.placeholder.uvthresholdposition"))
+            );
             blinds[channel].expiryperiod = defaultIfUndefined(
               msg.payload.expiryperiod,
               Number(RED._("blindcontroller.placeholder.expiryperiod"))
@@ -945,6 +986,13 @@ module.exports = function(RED) {
         defaultIfUndefined(
           config.cloudsthresholdposition,
           RED._("blindcontroller.placeholder.cloudsthresholdposition")
+        )
+      ),
+      uvthreshold: config.uvthreshold,
+      uvthresholdposition: Number(
+        defaultIfUndefined(
+          config.uvthresholdposition,
+          RED._("blindcontroller.placeholder.uvthresholdposition")
         )
       ),
       nightposition: Number(
