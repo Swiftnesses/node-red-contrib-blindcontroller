@@ -80,7 +80,7 @@
                 "invalid-cloudsthreshold"   : "Cloud threshold must be of type number and between 0 and 1: ",
                 "invalid-cloudsthresholdposition"
                                             : "Cloud threshold position be between 0 and 100 and a multiple of increment: ",
-                "invalid-uvthreshold"   	  : "UV threshold must be of type number and between 0 and 8: ",
+                "invalid-uvthreshold"   	  : "UV threshold must be of type number and between 0 and 11: ",
                 "invalid-uvthresholdposition"
                                             : "UV threshold position be between 0 and 100 and a multiple of increment: ",
                 "invalid-temperaturethresholdposition"
@@ -111,7 +111,7 @@
             "05" : "Sun in window",
             "06" : "Overcast conditions",
             "07" : "Temperature forecast above threshold",
-            "08" : "UV above threshold"
+            "08" : "UV below threshold"
         }
     }
 }
